@@ -66,3 +66,17 @@ python manage.py runserver  # 開発サーバー起動
 ## ⚠️ 注意事項
 - バックエンド起動前に仮想環境のアクティベートが必要
 - 初回セットアップ時は依存関係のインストールが必要
+
+
+🛠 Python クライアント初期設定
+Supabase Python クライアント（create_client()）
+https://supabase.com/docs/reference/python/initializing 
+
+🔐 認証関連 API
+1. ユーザー登録（サインアップ）
+sign_up() メソッド（Email／電話番号＋パスワード）
+https://supabase.com/docs/reference/python/auth-signup 
+
+2. ユーザー認証（ログイン）
+sign_in_with_password() メソッド（Email または Phone＋パスワード）
+https://supabase.com/docs/reference/python/auth-signinwithpassword 

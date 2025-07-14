@@ -61,7 +61,7 @@ const SignUpPage = () => {
         </Button>
         <Text>
           Already have an account?{" "}
-          <TextLink href="signin">
+          <TextLink href="/signin">
             <Strong>Sign in</Strong>
           </TextLink>
         </Text>

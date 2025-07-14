@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Secure Storage App",
+  title: "Secure Storage",
   description: "Securely store and manage your files within the same network",
 };
 

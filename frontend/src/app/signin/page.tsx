@@ -7,14 +7,30 @@ import { Button } from "@/app/components/button";
 import { Strong, Text, TextLink } from "@/app/components/text";
 import { useState } from "react";
 
+// Check the correct path
+// import { supabase } from "@/lib/supabase";
+import { supabase } from "../../../lib/supabaseClient";
+
 const SignInPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const signIn = (event: React.FormEvent) => {
+  const signIn = async (event: React.FormEvent) => {
     event.preventDefault();
+
     // TODO: Call backend API for user login.
-    console.log("User Login:", { email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      console.error("Login error:", error.message);
+      alert("Login failed: " + error.message);
+    } else {
+      console.log("User Login:", data);
+      alert("Check your email to verify your account.");
+    }
   };
 
   return (

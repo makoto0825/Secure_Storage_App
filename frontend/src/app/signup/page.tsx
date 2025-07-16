@@ -7,19 +7,34 @@ import { Button } from "@/app/components/button";
 import { Strong, Text, TextLink } from "@/app/components/text";
 import { useState } from "react";
 
+// Check the correct path
+// import { supabase } from "@/lib/supabase";
+import { supabase } from "../../../lib/supabaseClient";
+
 const SignUpPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const register = (event: React.FormEvent) => {
+  const register = async (event: React.FormEvent) => {
     event.preventDefault();
     if (password !== confirmPassword) {
       alert("Passwords do not match");
       return;
     }
     // TODO: Call backend API for user registration.
-    console.log("User registered:", { email, password });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (error) {
+      console.error("Signup error:", error.message);
+      alert("Failed to register: " + error.message);
+    } else {
+      console.log("User registered:", data);
+      alert("Check your email to verify your account.");
+    }
   };
 
   return (

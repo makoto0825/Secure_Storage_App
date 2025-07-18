@@ -1,3 +1,8 @@
+"use client";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/app/util/supabaseClient";
+
 import { Avatar } from "@/app/components/avatar";
 import {
   Dropdown,
@@ -32,6 +37,29 @@ import { InboxIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { LockClosedIcon } from "@heroicons/react/24/outline";
 
 const LoggedInLayout = ({ children }: { children: React.ReactNode }) => {
+  const router = useRouter();
+
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+
+      if (session?.user?.email) {
+        setUserEmail(session.user.email);
+      }
+    };
+    getUser();
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    await supabase.auth.signOut();
+    router.push("/signin");
+  }, [router]);
+
   return (
     <SidebarLayout
       navbar={
@@ -49,7 +77,7 @@ const LoggedInLayout = ({ children }: { children: React.ReactNode }) => {
                 <Avatar src="/profile-photo.jpg" square />
               </DropdownButton>
               <DropdownMenu className="min-w-64" anchor="bottom end">
-                <DropdownItem href="/logout">
+                <DropdownItem onClick={handleLogout}>
                   <ArrowRightStartOnRectangleIcon />
                   <DropdownLabel>Sign out</DropdownLabel>
                 </DropdownItem>
@@ -87,17 +115,17 @@ const LoggedInLayout = ({ children }: { children: React.ReactNode }) => {
                   />
                   <span className="min-w-0">
                     <span className="block truncate text-sm/5 font-medium text-zinc-950 dark:text-white">
-                      John
+                      User Name
                     </span>
                     <span className="block truncate text-xs/5 font-normal text-zinc-500 dark:text-zinc-400">
-                      john@example.com
+                      {userEmail || "Loading..."}
                     </span>
                   </span>
                 </span>
                 <ChevronUpIcon />
               </DropdownButton>
               <DropdownMenu className="min-w-64" anchor="top start">
-                <DropdownItem href="/logout">
+                <DropdownItem onClick={handleLogout}>
                   <ArrowRightStartOnRectangleIcon />
                   <DropdownLabel>Sign out</DropdownLabel>
                 </DropdownItem>

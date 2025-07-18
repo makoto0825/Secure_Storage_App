@@ -1,3 +1,8 @@
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/app/util/supabaseClient";
+
 import { Heading } from "@/app/components/heading";
 import { Button } from "@/app/components/button";
 import {
@@ -45,6 +50,32 @@ const MOCK_FILES = [
 ];
 
 const DashboardPage = () => {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        router.push("/signin");
+      } else {
+        setLoading(false);
+      }
+    };
+    checkSession();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen text-zinc-500">
+        Checking session...
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b border-zinc-950/10 pb-6 dark:border-white/10">

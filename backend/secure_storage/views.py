@@ -29,3 +29,26 @@ def test_api(request):
             'message': 'Invalid JSON data',
             'status': 'error'
         }, status=400) 
+    
+@csrf_exempt    
+@require_http_methods(["POST"])
+def upload_file(request):
+    """ファイルアップロード用のAPI"""
+    uploaded_file = request.FILES.get('file')
+    if not uploaded_file:
+        return JsonResponse({
+            'message': 'No file uploaded',
+            'status': 'error'
+        }, status=400)
+
+    # ファイルを保存（MEDIA_ROOT に保存されます）
+    file_path = f'media/{uploaded_file.name}'
+    with open(file_path, 'wb+') as destination:
+        for chunk in uploaded_file.chunks():
+            destination.write(chunk)
+
+    return JsonResponse({
+        'message': 'File uploaded successfully',
+        'status': 'success',
+        'filename': uploaded_file.name
+    }, status=201)

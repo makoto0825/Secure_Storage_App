@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/health/', views.health_check, name='health_check'),
     path('api/test/', views.test_api, name='test_api'),
-    path('upload/', FileUploadView.as_view(), name='file-upload'),
-
+    path('upload/', views.upload_file, name='upload-file'),
 ]
+# if settings.DEBUG:
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

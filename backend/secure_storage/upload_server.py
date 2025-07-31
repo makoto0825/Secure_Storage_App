@@ -1,4 +1,6 @@
 import socket
+from django.views.decorators.csrf import csrf_exempt
+
 
 def send_file_to_server(file_path, file_name) -> bool:
     server_host = '10.0.0.78'
@@ -21,3 +23,5 @@ def send_file_to_server(file_path, file_name) -> bool:
     except Exception as e:
         print(f"[Socket Error] {e}")
         return False
+
+

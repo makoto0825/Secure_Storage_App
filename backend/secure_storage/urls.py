@@ -23,6 +23,8 @@ urlpatterns = [
     path('api/health/', views.health_check, name='health_check'),
     path('api/test/', views.test_api, name='test_api'),
     path('upload/', views.upload_file, name='upload-file'),
+    path('download/', views.download_file, name='download_file'),
+
 ]
 # if settings.DEBUG:
 #     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

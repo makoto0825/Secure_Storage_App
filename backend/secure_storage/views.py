@@ -1,12 +1,13 @@
+import os
+import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-import json
+from .upload_server import send_file_to_server  # 成功/失敗を返す関数
 
 @csrf_exempt
 @require_http_methods(["GET"])
 def health_check(request):
-    """フロントエンドとの疎通確認用API"""
     return JsonResponse({
         'message': 'Hello from Django!',
         'status': 'success',
@@ -16,7 +17,6 @@ def health_check(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def test_api(request):
-    """POSTリクエストのテスト用API"""
     try:
         data = json.loads(request.body)
         return JsonResponse({
@@ -28,27 +28,46 @@ def test_api(request):
         return JsonResponse({
             'message': 'Invalid JSON data',
             'status': 'error'
-        }, status=400) 
-    
+        }, status=400)
+
 @csrf_exempt    
 @require_http_methods(["POST"])
 def upload_file(request):
-    """ファイルアップロード用のAPI"""
     uploaded_file = request.FILES.get('file')
     if not uploaded_file:
+        return JsonResponse({'message': 'No file uploaded', 'status': 'error'}, status=400)
+
+    temp_dir = 'media/temp'
+    os.makedirs(temp_dir, exist_ok=True)
+    file_path = os.path.join(temp_dir, uploaded_file.name)
+
+    try:
+        # ファイルを保存
+        with open(file_path, 'wb+') as destination:
+            for chunk in uploaded_file.chunks():
+                destination.write(chunk)
+
+        # socket送信（成功/失敗を判定）
+        success = send_file_to_server(file_path, uploaded_file.name)
+
+        # ファイル削除（成功・失敗問わず）
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+        if not success:
+            return JsonResponse({
+                'message': 'File upload succeeded, but server failed to save it.',
+                'status': 'error'
+            }, status=502)
+
         return JsonResponse({
-            'message': 'No file uploaded',
-            'status': 'error'
-        }, status=400)
+            'message': 'File uploaded and sent to server successfully',
+            'status': 'success',
+            'filename': uploaded_file.name
+        }, status=201)
 
-    # ファイルを保存（MEDIA_ROOT に保存されます）
-    file_path = f'media/{uploaded_file.name}'
-    with open(file_path, 'wb+') as destination:
-        for chunk in uploaded_file.chunks():
-            destination.write(chunk)
-
-    return JsonResponse({
-        'message': 'File uploaded successfully',
-        'status': 'success',
-        'filename': uploaded_file.name
-    }, status=201)
+    except Exception as e:
+        # ファイル削除（予期せぬ例外時）
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        return JsonResponse({'message': f'Upload failed: {str(e)}'}, status=500)

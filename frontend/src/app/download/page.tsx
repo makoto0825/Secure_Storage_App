@@ -1,37 +1,76 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const DownloadPage = () => {
-  const handleDownload = async () => {
-    try {
-      const res = await fetch('http://localhost:8000/download/', {
-        method: 'GET',
-      });
+  const [files, setFiles] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
 
+  // ファイル一覧を取得
+  const fetchFileList = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:8000/getFiles'); // ← Djangoのエンドポイントに合わせて
       if (!res.ok) {
-        throw new Error('ファイル取得に失敗しました');
+        throw new Error('ファイル一覧の取得に失敗しました');
       }
+      const data = await res.json();
+      setFiles(data.files || []);
+    } catch (err) {
+      console.error(err);
+      alert('ファイル一覧の取得に失敗しました');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFileList();
+  }, []);
+
+  // ファイルをダウンロードする処理
+  const handleDownload = async (fileName: string) => {
+    try {
+      const res = await fetch(
+        `http://localhost:8000/download/?file=${encodeURIComponent(fileName)}`
+      );
+      if (!res.ok) throw new Error('ファイル取得に失敗しました');
 
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'makoto.txt'; // 任意のファイル名
+      a.download = fileName;
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert('ダウンロード失敗');
       console.error(err);
+      alert('ダウンロード失敗');
     }
   };
 
   return (
     <div style={{ padding: '2rem' }}>
-      <h1>ファイルダウンロード</h1>
-      <button onClick={handleDownload} style={{ padding: '0.5rem 1rem' }}>
-        Download makoto.txt
-      </button>
+      <h1>ファイル一覧</h1>
+      {loading ? (
+        <p>読み込み中...</p>
+      ) : files.length === 0 ? (
+        <p>ファイルが見つかりません。</p>
+      ) : (
+        <ul>
+          {files.map((file) => (
+            <li key={file} style={{ marginBottom: '0.5rem' }}>
+              {file}{' '}
+              <button
+                onClick={() => handleDownload(file)}
+                style={{ marginLeft: '1rem' }}
+              >
+                ダウンロード
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };

@@ -24,6 +24,7 @@ urlpatterns = [
     path('api/test/', views.test_api, name='test_api'),
     path('upload/', views.upload_file, name='upload-file'),
     path('download/', views.download_file, name='download_file'),
+    path('getFiles/', views.get_files_api, name='get_files_api'),
 
 ]
 # if settings.DEBUG:

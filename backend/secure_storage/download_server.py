@@ -2,7 +2,7 @@ import socket
 
 def download_server(file_name: str) -> bytes:
     server_host = '10.0.0.78'
-    port = 5001
+    port = 5002
     file_data = b''
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:

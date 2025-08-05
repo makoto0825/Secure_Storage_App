@@ -40,6 +40,7 @@ const LoggedInLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -48,8 +49,9 @@ const LoggedInLayout = ({ children }: { children: React.ReactNode }) => {
         error,
       } = await supabase.auth.getSession();
 
-      if (session?.user?.email) {
-        setUserEmail(session.user.email);
+      if (session?.user) {
+        setUserEmail(session.user.email || "No Email");
+        setUsername(session.user.user_metadata?.username || "No Name");
       }
     };
     getUser();
@@ -115,7 +117,7 @@ const LoggedInLayout = ({ children }: { children: React.ReactNode }) => {
                   />
                   <span className="min-w-0">
                     <span className="block truncate text-sm/5 font-medium text-zinc-950 dark:text-white">
-                      User Name
+                      {username}
                     </span>
                     <span className="block truncate text-xs/5 font-normal text-zinc-500 dark:text-zinc-400">
                       {userEmail || "Loading..."}

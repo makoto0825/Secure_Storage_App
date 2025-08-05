@@ -17,4 +17,36 @@ def get_file_list_from_server() -> list:
                 break
             buffer += chunk
 
-    return buffer.decode().splitlines()  # 改行区切りのファイル名リストとして返す
+    # Return file metadata (name, uploadedAt, uploadedBy, size) as a list
+    lines = buffer.decode().splitlines()
+    file_list = []
+
+    for line in lines:
+        parts = line.split('|')
+        if len(parts) != 4:
+            continue
+        name, uploaded_at, uploaded_by, size = parts
+        file_list.append({
+            'name': name,
+            'uploadedAt': uploaded_at,
+            'uploadedBy': uploaded_by,
+            'size': size
+        })
+
+    return file_list
+    
+    # Mock data for testing
+    # return [
+    #     {
+    #         "name": "mydoc.txt",
+    #         "uploadedAt": "2025-08-04T12:34:56",
+    #         "uploadedBy": "Lisa",
+    #         "size": "24896"
+    #     },
+    #     {
+    #         "name": "assignment.docx",
+    #         "uploadedAt": "2025-08-03T17:00:00",
+    #         "uploadedBy": "TestUser",
+    #         "size": "10240"
+    #     }
+    # ]

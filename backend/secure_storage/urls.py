@@ -25,6 +25,7 @@ urlpatterns = [
     path('upload/', views.upload_file, name='upload-file'),
     path('download/', views.download_file, name='download_file'),
     path('getFiles/', views.get_files_api, name='get_files_api'),
+    path('delete/', views.delete_file, name='delete_file'),
 
 ]
 # if settings.DEBUG:

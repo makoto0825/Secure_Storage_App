@@ -27,9 +27,9 @@ import {
 import { format } from "date-fns";
 
 interface FileItem {
-  name: string,
-  uploadedAt?: string,
-  uploadedBy?: string,
+  name: string;
+  uploadedAt?: string;
+  uploadedBy?: string;
   size?: string;
 }
 
@@ -52,12 +52,12 @@ const DashboardPage = () => {
       }
 
       // Fetch file list
-      console.log(session?.access_token)
       const res = await axios.get("http://localhost:8000/getFiles", {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
+      console.log("File list response:", res.data);
 
       // Receive metadata of files
       setFiles(res.data.files || []);
@@ -99,14 +99,14 @@ const DashboardPage = () => {
 
       // Trigger file download on client side
       const url = window.URL.createObjectURL(res.data);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = fileName;
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Download Error", error);
-      alert('Download Error');
+      alert("Download Error");
     }
   };
 
@@ -161,7 +161,7 @@ const DashboardPage = () => {
         <Heading>Files</Heading>
         <div className="flex gap-4">
           <Button outline onClick={() => router.push("/upload")}>
-            <ArrowUpOnSquareIcon/>
+            <ArrowUpOnSquareIcon />
             Upload File
           </Button>
         </div>
@@ -185,7 +185,9 @@ const DashboardPage = () => {
                   ? format(new Date(file.uploadedAt), "MMM dd, yyyy HH:mm")
                   : "N/A"}
               </TableCell>
-              <TableCell className="text-zinc-500">{file.uploadedBy || "Unknown"}</TableCell>
+              <TableCell className="text-zinc-500">
+                {file.uploadedBy || "Unknown"}
+              </TableCell>
               <TableCell>{file.size || "Unknown"}</TableCell>
               <TableCell>
                 <div className="-mx-3 -my-1.5 sm:-mx-2.5">
@@ -194,10 +196,9 @@ const DashboardPage = () => {
                       <EllipsisHorizontalIcon />
                     </DropdownButton>
                     <DropdownMenu anchor="bottom end">
-                      <DropdownItem
-                        onClick={() => handleDownload(file.name)}
-                      >
-                        Download</DropdownItem>
+                      <DropdownItem onClick={() => handleDownload(file.name)}>
+                        Download
+                      </DropdownItem>
                       <DropdownItem
                         className="text-red-500! hover:text-white! hover:bg-red-500!"
                         onClick={() => handleDelete(file.name)}

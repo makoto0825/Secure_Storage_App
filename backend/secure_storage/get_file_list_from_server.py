@@ -1,9 +1,12 @@
-# utils.py など
+from .utils.ip import get_local_ip
+from decouple import config
+
 def get_file_list_from_server() -> list:
     import socket
 
-    server_host = '10.0.0.78'
+    server_host = config("SERVER_HOST", default=get_local_ip(socket))
     port = 5003
+    print(f"Connecting to server at {server_host}:{port} to get file list...")
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         client_socket.connect((server_host, port))
@@ -17,36 +20,22 @@ def get_file_list_from_server() -> list:
                 break
             buffer += chunk
 
-    # Return file metadata (name, uploadedAt, uploadedBy, size) as a list
+    # Return file metadata (name, uploadedAt, size) as a list
     lines = buffer.decode().splitlines()
+    print("Received file list from server:", lines)
     file_list = []
 
     for line in lines:
         parts = line.split('|')
-        if len(parts) != 4:
+        print("File metadata parts:", parts)
+        if len(parts) != 3:
             continue
-        name, uploaded_at, uploaded_by, size = parts
+        name, uploaded_at, size = parts
         file_list.append({
             'name': name,
             'uploadedAt': uploaded_at,
-            'uploadedBy': uploaded_by,
+            'uploadedBy': "Unknown", # TODO: create table to store uploader info
             'size': size
         })
 
     return file_list
-    
-    # Mock data for testing
-    # return [
-    #     {
-    #         "name": "mydoc.txt",
-    #         "uploadedAt": "2025-08-04T12:34:56",
-    #         "uploadedBy": "Lisa",
-    #         "size": "24896"
-    #     },
-    #     {
-    #         "name": "assignment.docx",
-    #         "uploadedAt": "2025-08-03T17:00:00",
-    #         "uploadedBy": "TestUser",
-    #         "size": "10240"
-    #     }
-    # ]

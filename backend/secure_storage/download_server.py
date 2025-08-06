@@ -1,6 +1,11 @@
+import socket
 from .utils.storage_server import get_local_ip
 from decouple import config
-import socket
+from cryptography.fernet import Fernet
+
+# Load the same key used for encryption (must match client upload)
+ENCRYPTION_KEY = config("ENCRYPTION_KEY").encode()
+fernet = Fernet(ENCRYPTION_KEY)
 
 def download_server(file_name: str) -> bytes:
     server_host = config("SERVER_HOST", default=get_local_ip(socket))
@@ -20,4 +25,9 @@ def download_server(file_name: str) -> bytes:
                 raise Exception(chunk.decode())
             file_data += chunk
 
-    return file_data
+    # Decrypt the received file data before returning
+    try:
+        decrypted_data = fernet.decrypt(file_data)
+        return decrypted_data
+    except Exception as e:
+        raise Exception(f"Decryption failed: {e}")

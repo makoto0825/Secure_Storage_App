@@ -7,3 +7,5 @@ def get_local_ip(socket):
     finally:
         s.close()
     return ip
+
+STORE_DIR = 'store'

@@ -1,45 +1,51 @@
 import socket
-from django.views.decorators.csrf import csrf_exempt
 import json
 import os
+from decouple import config
+from .utils.storage_server import get_local_ip
 
 def send_file_to_server(file_path, file_name, user_id, username) -> bool:
-# Sends the file to the file storage socket server (port 5001) along with metadata.
-# Metadata includes: filename, user_id (owner), uploadedBy, uploadedAt (empty), size.
-    
-    server_host = '10.0.0.78'
+    server_host = config("SERVER_HOST", default=get_local_ip(socket))
     port = 5001
+
+    safe_filename = os.path.basename(file_name)  # sanitize
 
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
             client_socket.connect((server_host, port))
 
-            # 1. Prepare metadata
+            # Build metadata
             metadata = {
-                "filename": file_name,
-                "user_id": user_id, # Supabase UID
-                "uploadedBy": username,
-                "uploadedAt": "",  # Let server set actual timestamp
+                "action": "UPLOAD",
+                "filename": safe_filename,
+                "user_id": user_id,
+                "uploaded_by": username,
+                "updated_by": user_id,  # Initially same as uploader
+                "uploaded_at": "",  # Let server set timestamp
                 "size": os.path.getsize(file_path)
             }
-            
-            # 2. Send metadata as newline-terminated JSON
+
+            # Send metadata as JSON
             client_socket.sendall((json.dumps(metadata) + "\n").encode())
-            
-            # 3. Send raw file content
+
+            # Wait for READY acknowledgment
+            ack = client_socket.recv(1024).decode().strip()
+            if ack != "READY":
+                print(f"[Server Error] Expected READY, got: {ack}")
+                return False
+
+            # Stream file content
             with open(file_path, 'rb') as f:
                 while chunk := f.read(1024):
                     client_socket.sendall(chunk)
 
-            # 4. Signal end of file
-            client_socket.sendall(b'END of file')
+            # End marker
+            client_socket.sendall(b'END_OF_FILE')
 
-            # 5. Wait for confirmation from the server
+            # Confirmation
             result = client_socket.recv(1024)
             return result == b'true'
 
     except Exception as e:
         print(f"[Socket Error] {e}")
         return False
-
-

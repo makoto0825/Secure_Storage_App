@@ -1,15 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
+import { format } from "date-fns";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/app/util/supabaseClient";
-import axios from "axios";
+import {
+  deleteFileFromServer,
+  downloadFileFromServer,
+  fetchFileListFromServer,
+} from "@/app/services/fileService";
 
 import { Heading } from "@/app/components/heading";
-import { Button } from "@/app/components/button";
-import {
-  ArrowUpOnSquareIcon,
-  EllipsisHorizontalIcon,
-} from "@heroicons/react/16/solid";
+import { EllipsisHorizontalIcon } from "@heroicons/react/16/solid";
 import {
   Table,
   TableBody,
@@ -24,7 +24,7 @@ import {
   DropdownItem,
   DropdownMenu,
 } from "@/app/components/dropdown";
-import { format } from "date-fns";
+import { UploadFile } from "./components/UploadFile";
 
 interface FileItem {
   name: string;
@@ -38,104 +38,37 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [files, setFiles] = useState<FileItem[]>([]);
 
-  // Fetch file list
   const fetchFileList = async () => {
     setLoading(true);
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session?.access_token) {
-        router.push("/signin");
-        return;
-      }
-
-      // Fetch file list
-      const res = await axios.get("http://localhost:8000/getFiles", {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-      console.log("File list response:", res.data);
-
-      // Receive metadata of files
-      setFiles(res.data.files || []);
+      const files = await fetchFileListFromServer();
+      setFiles(files);
     } catch (error) {
-      console.error("Error fetching file list", error);
-      alert("Error retrieving file list");
+      alert(error instanceof Error ? error.message : "Failed to fetch files");
     } finally {
       setLoading(false);
     }
   };
 
-  // Call once on mount
   useEffect(() => {
     fetchFileList();
   }, [router]);
 
-  // Download function
   const handleDownload = async (fileName: string) => {
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session?.access_token) {
-        router.push("/signin");
-        return;
-      }
-
-      // Send GET request to /download endpoint with Authorization
-      const res = await axios.get(
-        `http://localhost:8000/download/?file=${encodeURIComponent(fileName)}`,
-        {
-          responseType: "blob",
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }
-      );
-
-      // Trigger file download on client side
-      const url = window.URL.createObjectURL(res.data);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      a.click();
-      window.URL.revokeObjectURL(url);
+      await downloadFileFromServer(fileName);
     } catch (error) {
-      console.error("Download Error", error);
-      alert("Download Error");
+      alert(error instanceof Error ? error.message : "Failed to download file");
     }
   };
 
-  // DELETE function
   const handleDelete = async (fileName: string) => {
     if (!confirm(`Are you sure you want to delete ${fileName}?`)) return;
 
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const res = await deleteFileFromServer(fileName);
 
-      if (!session?.access_token) {
-        router.push("/signin");
-        return;
-      }
-
-      // Send DELETE request to Django backend
-      // Django backend will extract user_id from JWT and forward the request
-      const res = await axios.delete(
-        `http://localhost:8000/delete/?file=${encodeURIComponent(fileName)}`,
-        {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }
-      );
-
-      if (res.status === 200) {
+      if (res) {
         alert("File deleted successfully");
         fetchFileList(); // Refresh file list
       } else {
@@ -160,10 +93,7 @@ const DashboardPage = () => {
       <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b border-zinc-950/10 pb-6 dark:border-white/10">
         <Heading>Files</Heading>
         <div className="flex gap-4">
-          <Button outline onClick={() => router.push("/upload")}>
-            <ArrowUpOnSquareIcon />
-            Upload File
-          </Button>
+          <UploadFile onFileUploaded={() => fetchFileList()} />
         </div>
       </div>
       <Table>

@@ -1,11 +1,11 @@
-from .utils.ip import get_local_ip
+from .utils.storage_server import get_local_ip
 from decouple import config
 
 def get_file_list_from_server() -> list:
     import socket
 
     server_host = config("SERVER_HOST", default=get_local_ip(socket))
-    port = 5003
+    port = 5001
     print(f"Connecting to server at {server_host}:{port} to get file list...")
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
@@ -28,13 +28,13 @@ def get_file_list_from_server() -> list:
     for line in lines:
         parts = line.split('|')
         print("File metadata parts:", parts)
-        if len(parts) != 3:
+        if len(parts) != 4:
             continue
-        name, uploaded_at, size = parts
+        name, uploaded_at, size, uploaded_by = parts
         file_list.append({
             'name': name,
             'uploadedAt': uploaded_at,
-            'uploadedBy': "Unknown", # TODO: create table to store uploader info
+            'uploadedBy': uploaded_by,
             'size': size
         })
 

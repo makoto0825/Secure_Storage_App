@@ -1,13 +1,15 @@
+from .utils.storage_server import get_local_ip
+from decouple import config
 import socket
 
 def download_server(file_name: str) -> bytes:
-    server_host = '10.0.0.78'
-    port = 5002
+    server_host = config("SERVER_HOST", default=get_local_ip(socket))
+    port = 5001
     file_data = b''
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         client_socket.connect((server_host, port))
-        client_socket.send(file_name.encode())
+        client_socket.send(f"GET_FILE:{file_name}".encode())
 
         while True:
             chunk = client_socket.recv(1024)

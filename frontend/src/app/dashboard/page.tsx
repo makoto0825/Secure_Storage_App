@@ -33,6 +33,21 @@ interface FileItem {
   size?: string;
 }
 
+const formatFileSize = (bytes: string): string => {
+  const parsedBytes = parseInt(bytes, 10);
+  if (isNaN(parsedBytes)) return "Unknown";
+  const KB = 1024;
+  const MB = KB * 1024;
+
+  if (parsedBytes < KB) {
+    return `${parsedBytes} Bytes`;
+  } else if (parsedBytes < MB) {
+    return `${(parsedBytes / KB).toFixed(2)} KB`;
+  } else {
+    return `${(parsedBytes / MB).toFixed(2)} MB`;
+  }
+};
+
 const DashboardPage = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -118,7 +133,7 @@ const DashboardPage = () => {
               <TableCell className="text-zinc-500">
                 {file.uploadedBy || "Unknown"}
               </TableCell>
-              <TableCell>{file.size || "Unknown"}</TableCell>
+              <TableCell>{formatFileSize(file.size) || "Unknown"}</TableCell>
               <TableCell>
                 <div className="-mx-3 -my-1.5 sm:-mx-2.5">
                   <Dropdown>

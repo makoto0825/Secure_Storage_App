@@ -39,6 +39,8 @@ backend/.venv/
 .env.development.local
 .env.test.local
 .env.production.local
+/backend/.env
+/backend/.env.*
 
 # IDE
 .vscode/

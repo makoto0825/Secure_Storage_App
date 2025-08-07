@@ -15,6 +15,7 @@ const SignUpPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
 
   const register = async (event: React.FormEvent) => {
@@ -33,6 +34,12 @@ const SignUpPage = () => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            username, // To use in the frontend/backend operations
+            fullName: username // To display in Supabase UI
+          }
+        }
       });
 
       if (error) {
@@ -61,6 +68,16 @@ const SignUpPage = () => {
         className="grid w-full max-w-sm grid-cols-1 gap-8"
       >
         <Heading>Register as a User</Heading>
+        <Field>
+          <Label>Username</Label>
+          <Input
+            type="text"
+            name="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+        </Field>
         <Field>
           <Label>Email</Label>
           <Input

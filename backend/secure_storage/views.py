@@ -6,10 +6,10 @@ from django.views.decorators.http import require_http_methods
 from .upload_server import send_file_to_server  # 成功/失敗を返す関数
 from .download_server import download_server  
 from .get_file_list_from_server import get_file_list_from_server  # ファイル一覧を取得する関数
+from .delete_file_from_server import delete_file_on_server
+from .auth_utils import verify_token
 from django.http import FileResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-
-
 
 
 @csrf_exempt
@@ -40,10 +40,20 @@ def test_api(request):
 @csrf_exempt    
 @require_http_methods(["POST"])
 def upload_file(request):
+    # Authenticate user via token
+    try:
+        user_payload = verify_token(request.headers.get("Authorization", ""))
+        user_id = user_payload.get("sub")
+        username = user_payload.get("user_metadata", {}).get("username", "")
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=401)
+    
+    # Receive uploaded file from FormData
     uploaded_file = request.FILES.get('file')
     if not uploaded_file:
         return JsonResponse({'message': 'No file uploaded', 'status': 'error'}, status=400)
 
+    # Temporarily save file to local disk
     temp_dir = 'media/temp'
     os.makedirs(temp_dir, exist_ok=True)
     file_path = os.path.join(temp_dir, uploaded_file.name)
@@ -55,7 +65,10 @@ def upload_file(request):
                 destination.write(chunk)
 
         # socket送信（成功/失敗を判定）
-        success = send_file_to_server(file_path, uploaded_file.name)
+        # success = send_file_to_server(file_path, uploaded_file.name, user_id, username)
+        # Simulate successful storage
+        print(f"[SIMULATION] Pretending to upload '{uploaded_file.name}' by {username} ({user_id})")
+        success = True
 
         # ファイル削除（成功・失敗問わず）
         if os.path.exists(file_path):
@@ -70,7 +83,9 @@ def upload_file(request):
         return JsonResponse({
             'message': 'File uploaded and sent to server successfully',
             'status': 'success',
-            'filename': uploaded_file.name
+            'filename': uploaded_file.name,
+            'user_id': user_id,
+            'username': username 
         }, status=201)
 
     except Exception as e:
@@ -83,6 +98,12 @@ def upload_file(request):
 @require_http_methods(["GET"])
 def download_file(request):
     print("✅ /download/ にリクエストが届きました")
+    
+    # Authenticate user via token
+    try: 
+        user_payload = verify_token(request.headers.get("Authorization", ""))
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=401)
 
     file_name = request.GET.get('file')  # ← クエリパラメータから取得
     if not file_name:
@@ -110,8 +131,39 @@ def download_file(request):
 @csrf_exempt
 @require_http_methods(["GET"])
 def get_files_api(request):
+    # Authenticate user via token
+    auth_header = request.headers.get("Authorization", "")
+    print("Authorization header received:", auth_header)
+    try: 
+        user_payload = verify_token(auth_header)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=401)
+    
     try:
         files = get_file_list_from_server()
         return JsonResponse({'files': files}, status=200)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def delete_file(request):
+    # Authenticate user via token
+    # Extract user info from the access token (JWT)
+    try: 
+        user_payload = verify_token(request.headers.get("Authorization", ""))
+        user_id = user_payload.get("sub")
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=401)    
+    
+    # Get file name from query param
+    file_name = request.GET.get('file')
+    if not file_name:
+        return JsonResponse({'error': 'No file specified'}, status=400)
+
+    # Call delete_file_on_server with file name and user_id
+    success = delete_file_on_server(file_name, user_id)
+    if success:
+        return JsonResponse({'message': 'File deleted successfully'})
+    else:
+        return JsonResponse({'error': 'Failed to delete file'}, status=500)

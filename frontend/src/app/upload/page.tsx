@@ -1,10 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from "@/app/util/supabaseClient";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 
 export default function UploadPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      // Check if user is logged in using Supabase session
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        router.push("/signin");
+      }
+    };
+
+    checkAuth();
+  }, [router]);
 
   const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -14,15 +33,28 @@ export default function UploadPage() {
     formData.append('file', file);
 
     try {
-      const res = await fetch('http://localhost:8000/upload/', {
-        method: 'POST',
-        body: formData,
+      // Check if user is logged in using Supabase session
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        router.push("/signin");
+        return;
+      }
+
+      // Send POST request to Django /upload/ with file and access token
+      const res = await axios.post('http://localhost:8000/upload/', formData, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "multipart/form-data",
+        },
       });
 
-      const data = await res.json();
-      setMessage(data.message || 'アップロードに失敗しました');
-    } catch {
-      setMessage('ファイルのアップロード中にエラーが発生しました');
+      setMessage(res.data.message || "Uploaded Successfully")
+    } catch (error) {
+      console.error("Upload error", error);
+      setMessage("Upload Error");
     }
   };
 
@@ -39,7 +71,7 @@ export default function UploadPage() {
           type='submit'
           className='bg-blue-500 text-white px-4 py-2 rounded border border-blue-500 hover:bg-blue-600'
         >
-          submit
+          Submit
         </button>
       </form>
       {message && <p className='mt-4 text-green-600'>{message}</p>}

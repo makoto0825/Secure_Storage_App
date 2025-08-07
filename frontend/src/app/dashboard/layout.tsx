@@ -33,7 +33,6 @@ import {
   ChevronUpIcon,
   FolderIcon,
 } from "@heroicons/react/16/solid";
-import { InboxIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { LockClosedIcon } from "@heroicons/react/24/outline";
 
 const LoggedInLayout = ({ children }: { children: React.ReactNode }) => {
@@ -46,7 +45,6 @@ const LoggedInLayout = ({ children }: { children: React.ReactNode }) => {
     const getUser = async () => {
       const {
         data: { session },
-        error,
       } = await supabase.auth.getSession();
 
       if (session?.user) {
@@ -68,15 +66,14 @@ const LoggedInLayout = ({ children }: { children: React.ReactNode }) => {
         <Navbar>
           <NavbarSpacer />
           <NavbarSection>
-            <NavbarItem href="/search" aria-label="Search">
-              <MagnifyingGlassIcon />
-            </NavbarItem>
-            <NavbarItem href="/inbox" aria-label="Inbox">
-              <InboxIcon />
-            </NavbarItem>
             <Dropdown>
               <DropdownButton as={NavbarItem}>
-                <Avatar src="/profile-photo.jpg" square />
+                <Avatar
+                  initials={username?.charAt(0).toUpperCase() || "U"}
+                  className="size-10"
+                  square
+                  alt=""
+                />
               </DropdownButton>
               <DropdownMenu className="min-w-64" anchor="bottom end">
                 <DropdownItem onClick={handleLogout}>
@@ -110,7 +107,7 @@ const LoggedInLayout = ({ children }: { children: React.ReactNode }) => {
               <DropdownButton as={SidebarItem}>
                 <span className="flex min-w-0 items-center gap-3">
                   <Avatar
-                    src="/profile-photo.jpg"
+                    initials={username?.charAt(0).toUpperCase() || "U"}
                     className="size-10"
                     square
                     alt=""

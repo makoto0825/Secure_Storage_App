@@ -65,10 +65,7 @@ def upload_file(request):
                 destination.write(chunk)
 
         # socket送信（成功/失敗を判定）
-        # success = send_file_to_server(file_path, uploaded_file.name, user_id, username)
-        # Simulate successful storage
-        print(f"[SIMULATION] Pretending to upload '{uploaded_file.name}' by {username} ({user_id})")
-        success = True
+        success = send_file_to_server(file_path, uploaded_file.name, user_id, username)
 
         # ファイル削除（成功・失敗問わず）
         if os.path.exists(file_path):

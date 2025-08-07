@@ -6,3 +6,4 @@ python-decouple==3.8
 supabase==2.3.4 
 PyJWT==2.10.1
 requests==2.32.4
+cryptography==42.0.5

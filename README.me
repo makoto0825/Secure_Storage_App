@@ -1,82 +1,118 @@
-# Secure Storage App
+# 🔐 Secure Storage App
 
-セキュアファイルストレージアプリケーション
+A secure file storage application with Next.js frontend, Django backend, and Python socket server.
 
-## 🚀 セットアップ手順
+## 🚀 Quick Start
 
-### 前提条件
-- Node.js (v18以上)
-- Python (v3.8以上)
-- Git
+### 📋 Prerequisites
+- ⚡ Node.js (v18+)
+- 🐍 Python (v3.8+)
+- 📦 Git
 
-### 1. リポジトリのクローン
-1.1 git clone https://github.com/makoto0825/Secure_Storage_App　
-1.2 cd Secure_Storage_App
+### ⚙️ Setup Instructions
 
+1. **📥 Clone the repository**
+   ```bash
+   git clone https://github.com/makoto0825/Secure_Storage_App
+   cd Secure_Storage_App
+   ```
 
-### 2. フロントエンド（Next.js）サーバー立ち上げ手順
-2.1 cd frontend
-2.2 npm install
-2.3 npm run dev
+2. **🎨 Frontend (Next.js) Setup**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+   - 🌐 Access: http://localhost:3000/
+   - 🧪 API test: http://localhost:3000/api-test
 
-- 起動確認: http://localhost:3000/
--http://localhost:3000/api-testでDjangoとの疎通確認が可能
+3. **⚙️ Backend (Django) Setup**
+   ```bash
+   cd backend
+   python -m venv venv
+   venv\Scripts\activate  # Windows
+   # source venv/bin/activate  # Mac/Linux
+   pip install -r requirements.txt
+   python manage.py runserver
+   ```
+   - 🌐 Access: http://127.0.0.1:8000/
 
-### 3. バックエンド（Django）サーバー立ち上げ
-3.1 cd backend
-3.2 python -m venv venv
-3.3 venv\Scripts\activate  # Windowsの場合
-    # source venv/bin/activate  # Mac/Linuxの場合 これで合っているかは未確認
-3.4 pip install -r requirements.txt
-3.5 python manage.py runserver
-```
-- 起動確認: http://127.0.0.1:8000/　　　※Page not found (404)と表示されるがサーバー自体は起動しているので無視してOk
+4. **🔌 Socket Server Setup**
+   ```bash
+   cd server
+   python main.py
+   ```
+   - 🔌 Server runs on port 5001
 
-## 📁 プロジェクト構造
+## 📁 Project Structure
+
 ```
 Secure_Storage_App/
-├── frontend/           # Next.js フロントエンド
-├── backend/            # バックエンド
-│   ├── secure_storage/  # Djangoプロジェクト
-│   │   ├── settings.py  # Django設定ファイル(Djangoが基本的な設定を作成)
-│   │   ├── urls.py      # URLルーティング
-│   │   └── wsgi.py      # WSGI設定
-│   ├── manage.py        # Django管理コマンドを設定するファイル
-│   ├── requirements.txt # Python依存関係(Python版のpackage.json的なもの)
-│   └── venv/            # Python仮想環境（ライブラリの置き場 + Python の実行環境そのもの）
-└── README.me         # このファイル
+├── 🎨 frontend/           # Next.js frontend with TypeScript
+│   ├── 📂 src/           # Source code
+│   ├── 🖼️ public/        # Static assets
+│   └── 📦 package.json   # Dependencies
+├── ⚙️ backend/           # Django backend
+│   ├── 🐍 secure_storage/  # Django project
+│   ├── 📋 requirements.txt # Python dependencies
+│   └── ⚙️ manage.py       # Django management
+├── 🔌 server/            # Python socket server
+│   ├── 🚀 main.py        # Server entry point
+│   ├── 🛠️ handlers/      # File operation handlers
+│   └── 🔧 utils.py       # Utility functions
+└── 📖 README.me         # This file
 ```
 
-## 🔧 開発用コマンド
+## 🛠 Tech Stack
 
-### フロントエンド
+### 🎨 Frontend
+- **⚡ Next.js 15.3.5** with TypeScript
+- **⚛️ React 19** with Tailwind CSS
+- **🔐 Supabase** for authentication and storage
+- **🎭 Framer Motion** for animations
+
+### ⚙️ Backend
+- **🐍 Django 5.2.4** with REST framework
+- **🔐 Supabase Python client** for database operations
+- **🔒 Cryptography** for file encryption
+
+### 🔌 Socket Server
+- **🐍 Python socket server** for file operations
+- **🛠️ Custom handlers** for upload, download, delete, and list operations
+
+## 🔧 Development Commands
+
+### 🎨 Frontend
 ```bash
 cd frontend
-npm run dev          # 開発サーバー起動
-npm run build        # ビルド
+npm run dev          # 🚀 Start development server
+npm run build        # 📦 Build for production
+npm run lint         # 🔍 Run linter
 ```
 
-### バックエンド
+### ⚙️ Backend
 ```bash
 cd backend
-venv\Scripts\activate  # 仮想環境アクティベート
-python manage.py runserver  # 開発サーバー起動
+venv\Scripts\activate  # 🔧 Activate virtual environment
+python manage.py runserver  # 🚀 Start Django server
 ```
 
-## ⚠️ 注意事項
-- バックエンド起動前に仮想環境のアクティベートが必要
-- 初回セットアップ時は依存関係のインストールが必要
+### 🔌 Socket Server
+```bash
+cd server
+python main.py       # 🚀 Start socket server
+```
 
+## 🔐 Features
 
-🛠 Python クライアント初期設定
-Supabase Python クライアント（create_client()）
-https://supabase.com/docs/reference/python/initializing 
+- **🔒 Secure file storage** with encryption
+- **👤 User authentication** via Supabase
+- **⚡ Real-time file operations** via socket server
+- **🎨 Modern UI** with responsive design
+- **📁 File upload/download/delete** functionality
 
-🔐 認証関連 API
-1. ユーザー登録（サインアップ）
-sign_up() メソッド（Email／電話番号＋パスワード）
-https://supabase.com/docs/reference/python/auth-signup 
+## ⚠️ Notes
 
-2. ユーザー認証（ログイン）
-sign_in_with_password() メソッド（Email または Phone＋パスワード）
-https://supabase.com/docs/reference/python/auth-signinwithpassword 
+- 🔧 Activate virtual environment before running backend
+- 🔌 Socket server must be running for file operations
+- ✅ Ensure all three components (frontend, backend, socket server) are running for full functionality
